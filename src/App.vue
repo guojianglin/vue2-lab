@@ -3,7 +3,10 @@
     <div style="width: 800px">
       <field-mapping :options="options">
         <template #source-column="slotScope">
-          <button type="text" size="mini" @click="handleCheckDetail(slotScope.data.row)">查看详情</button>
+          <div v-if="slotScope.data.column === 'desc'">
+            自定义描述：{{slotScope.data.row.desc}}
+          </div>
+          <div v-if="slotScope.data.column === 'operate'" type="text" size="mini" @click="handleCheckDetail(slotScope.data.row)">查看详情</div>
         </template>
       </field-mapping>
     </div>
@@ -33,19 +36,35 @@ export default {
     const relation = [{
       source: {
         name: "field1",
-        type: "xxxxxx",
         key: "field1"
       },
       target: {
         name: "field5",
-        type: "xxxxxx",
         key: "field5"
+      }
+    }, {
+      source: {
+        name: "field2",
+        key: "field2"
+      },
+      target: {
+        name: "field6",
+        key: "field6"
+      }
+    }, {
+      source: {
+        name: "field3",
+        key: "field3"
+      },
+      target: {
+        name: "field4",
+        key: "field4"
       }
     }];
     const sourceCols = [
       { title: '源表字段', key: 'name', width: '80px' },
       { title: '类型', key: 'type', width: '100px' },
-      { title: '描述', key: 'desc', width: '150px' },
+      { title: '描述', key: 'desc', width: '150px', custom: true },
       { title: '操作', key: 'operate', width: '80px', align: 'center', custom: true }, 
     ];
     const targetCols = [

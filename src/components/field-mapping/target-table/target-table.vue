@@ -1,28 +1,52 @@
 <template>
   <div class="target-table">
     <div class="table-title">
-      <div class="column-item" v-for="item in tableColumns" :key="item.key" :style="{width: item.width, 'text-align': item.align }">{{item.title}}</div>
+      <div 
+        v-for="item in tableColumns"
+        :key="item.key"
+        class="column-item"
+        :style="{width: item.width, 'text-align': item.align }"
+      >
+        {{item.title}}
+      </div>
     </div>
 
-    <div class="table-content">
-      <div class="row" v-for="(row, index) in tableData" :key="index">
-        <div class="column-item" v-for="item in tableColumns" :key="item.key" :style="{width: item.width, 'text-align': item.align }">
+    <draggable v-model="targetTableData" class="table-content">
+      <div
+        v-for="(row, index) in targetTableData"
+        :key="index"
+        :class="['row', { active: currentRelation.target && row.key === currentRelation.target.key }]"
+        :data-key="row.key"
+        @mouseenter="handleActive(row.key)"
+        @mouseleave="handleActive(null)"
+      >
+        <div
+          class="column-item"
+          v-for="item in tableColumns"
+          :key="item.key"
+          :style="{width: item.width, 'text-align': item.align }"
+        >
           <template v-if="item.custom">
             <slot name="column" :row="row" :index="index" :column="item.key"></slot>
           </template>
           <template v-else>
-            {{row[item.key]}}
+            <div :title="row[item.key]">{{row[item.key]}}</div>
           </template>
         </div>
-        <div class="row-icon"></div>
+        
+        <div :class="['row-icon', 'target-row-icon',  row.iconShow, { visible: drawing }]"></div>
       </div>
-    </div>
+    </draggable>
   </div>
 </template>
 
 <script>
+  import draggable from 'vuedraggable'
   export default {
     name: 'target-table',
+    components: {
+      draggable
+    },
     props: {
       tableData: {
         type: Array,
@@ -36,7 +60,32 @@
           return [];
         }
       },
+      drawing: {
+        type: Boolean,
+        default: false
+      },
+      currentRelation: {
+        type: Object,
+        default: () => {
+          return {};
+        }
+      },
     },
+    computed: {
+      targetTableData: {
+        get () {
+          return this.tableData
+        },
+        set (val) {
+          this.$emit('update:tableData', val)
+        }
+      }
+    },
+    methods: {
+      handleActive(key) {
+        this.$emit('changeActive', key, 'target');
+      }
+    }
   }
 </script>
 
@@ -51,8 +100,7 @@
     padding-right: 8px;
     height: 36px;
     line-height: 36px;
-    background-color: #fcfcfc;
-    border-bottom: 1px dashed #dddddd;
+    background-color: #f0f0f0;
 
     &.active {
       background-color: #eefbff;
@@ -78,6 +126,10 @@
       border-bottom: 1px dashed #dddddd;
       position: relative;
 
+      &:hover, &.active {
+        background-color: #eefbff;
+      }
+
       .column-item {
         padding-left: 20px;
         width: 100px;
@@ -88,6 +140,9 @@
       }
 
       .row-icon {
+        &.visible {
+          visibility: visible;
+        }
         visibility: hidden;
         position: absolute;
         box-sizing: border-box;
